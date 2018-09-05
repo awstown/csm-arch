@@ -1,0 +1,54 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS CodeBuild template for building docker images(shiny-base, shiny)'
+
+Resources:
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codebuild.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  BuildShinyBase:
+    Type: AWS::CodeBuild::Project
+    DependsOn: CodeBuildRole
+    Properties: 
+      Artifacts:
+        Type: NO_ARTIFACTS
+      BadgeEnabled: true
+      Environment:
+        ComputeType: BUILD_GENERAL1_MEDIUM
+        Image:  aws/codebuild/docker:17.09.0
+        PrivilegedMode: true
+        Type: LINUX_CONTAINER
+      Name: shiny-base
+      ServiceRole: !Ref CodeBuildRole
+      Source: 
+        Type: GITHUB
+        Location: https://github.com/townsenddw/shiny
+        BuildSpec: images/shiny-base/buildspec.yml
+
+  BuildShiny:
+    Type: AWS::CodeBuild::Project
+    DependsOn: CodeBuildRole
+    Properties: 
+      Artifacts:
+        Type: NO_ARTIFACTS
+      BadgeEnabled: true
+      Environment:
+        ComputeType: BUILD_GENERAL1_MEDIUM
+        Image:  aws/codebuild/docker:17.09.0
+        PrivilegedMode: true
+        Type: LINUX_CONTAINER
+      Name: shiny-server
+      ServiceRole: !Ref CodeBuildRole
+      Source: 
+        Type: GITHUB
+        Location: https://github.com/townsenddw/shiny
